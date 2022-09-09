@@ -1,3 +1,3 @@
 # Mapping
 
-Repo with resources for making maps/choropleths
+Example code and files for making US choropleths in Python and R.

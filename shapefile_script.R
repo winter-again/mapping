@@ -14,7 +14,7 @@ county_sp <- sf::st_read('cb_2020_us_county_5m/cb_2020_us_county_5m.shp', quiet=
   sf::st_transform(crs=2163) %>%
   as('Spatial') # convert to Spatial obj
 
-# transform function to handle AK and HI
+# transform function to handle AK and HI -- stick them below continental US
 # borrowed from urbnmapr package source code
 transform_state <- function(object, rot, scale, shift) {
   object %>%
@@ -38,10 +38,10 @@ county_sf <- county_sp[!county_sp$state %in% c('AK','HI'),] %>%
   rbind(alaska, hawaii) %>%
   sf::st_as_sf()
 
-# test mapping
-# ggplot() +
-#   geom_sf(data=county_sf, color='black', size=0.05)
-
 # save sf object for later plotting
 # 4 output files
 sf::st_write(county_sf, 'US_2020_county_sf.shp')
+
+# test mapping
+ggplot() +
+  geom_sf(data=county_sf, color='black', size=0.05)

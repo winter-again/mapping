@@ -27,3 +27,8 @@ plt <- ggplot() +
         legend.background=element_blank(),
         plot.margin=margin(1,1.5,1,1, 'cm'))
 plt
+
+# save
+# note that the relative size of the 
+# legend depends on size of saved image below
+ggsave('R_mapping_plt.png', width=7, height=5, units='in')

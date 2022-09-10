@@ -12,10 +12,12 @@ county_sp <- sf::st_read('cb_2020_us_county_5m/cb_2020_us_county_5m.shp', quiet=
   rename(FIPS=GEOID,
          state=STUSPS) %>%
   sf::st_transform(crs=2163) %>%
+  # sf::st_transform(crs=5070) %>%
   as('Spatial') # convert to Spatial obj
 
 # transform function to handle AK and HI -- stick them below continental US
 # borrowed from urbnmapr package source code
+# also ref this: https://rstudio-pubs-static.s3.amazonaws.com/94122_462a1d171e4944f0a99c1f91fd5071d5.html#move-alaska-scaled-down-and-hawaii
 transform_state <- function(object, rot, scale, shift) {
   object %>%
     maptools::elide(rotate=rot) %>%
@@ -23,6 +25,7 @@ transform_state <- function(object, rot, scale, shift) {
     maptools::elide(shift=shift)
 }
 
+# version corresponding to crs=2163
 # transform AK
 alaska <- county_sp[county_sp$state=='AK',] %>%
   transform_state(-35, 2, c(-2600000, -2300000))
@@ -32,6 +35,16 @@ sp::proj4string(alaska) <- proj4string(county_sp)
 hawaii <- county_sp[county_sp$state=='HI',] %>%
   transform_state(-35, 0.8, c(-1170000, -2363000))
 sp::proj4string(hawaii) <- proj4string(county_sp)
+
+
+# version corresponding to crs=5070
+# alaska <- county_sp[county_sp$state=='AK',] %>%
+#   transform_state(-39, 2, c(-2700000, -100000))
+# sp::proj4string(alaska) <- proj4string(county_sp)
+
+# hawaii <- county_sp[county_sp$state=='HI',] %>%
+#   transform_state(-35, 0.8, c(-900000, -200000))
+# sp::proj4string(hawaii) <- proj4string(county_sp)
 
 # recombine with original shapefile
 county_sf <- county_sp[!county_sp$state %in% c('AK','HI'),] %>%

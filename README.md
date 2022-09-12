@@ -3,11 +3,12 @@
 ## Main files
 
 - `county_popn_2021.csv`: example county population data I use to validate the maps
-- `usmap_mapping.R`: example of US county choropleth using `usmap` package
+- `R_mapping.R`: example of US county choropleths using the shapefiles/GeoJSON I worked on
+  - example plots are `R_mapping_plt.pdf` and `R_mapping_plt.png`
+- `usmap_mapping.R`: example of US county choropleths using `usmap` package
   - example plots are `usmap_mapping_plt.pdf` and `usmap_mapping_plt.png`
-- `R_mapping.R`: example of US county choropleth using the shapefiles/GeoJSON I worked on
-  - exmaple plots are `R_mapping_plt.pdf` and `R_mapping_plt.png`
-- `python_mapping.ipynb`: example of US county choropleth using `Plotly` and the updated GeoJSON I worked on 
+- `python_mapping.ipynb`: example of US county choropleths using `Plotly` and the updated GeoJSON I worked on 
+  - example plots are `Plotly_mapping_plt.pdf` and `Plotly_mapping_plot.png`
 - `troubleshooting_Plotly.ipynb`: walkthrough of why Plotly's suggested GeoJSON file isn't up-to-date
 
 ## Motivation
@@ -31,7 +32,7 @@ Steps I took:
     
 2. Use [mapshaper](https://github.com/mbloch/mapshaper) to filter the shapefile data and convert to GeoJSON. There's a [GUI](https://mapshaper.org/) online you can use, but I installed the actual mapshaper npm package and wrote a script with the commands for future reference. The script is `mapshaper_script.js` and can be run with `node mapshaper_script.js` if you have NodeJS installed. As I found out later, there seems to be some odd behavior/compatibility issues because of GeoJSON conventions (gj2008 vs. rfc7946), so the script outputs 2 files to the `mapshaper_CLI` folder. `US_county_mapshaper_rfc7946.json` has default args and `US_county_mapshaper_gj2008.json` with the gj2008 flag as suggested in this [issue](https://github.com/developmentseed/dirty-reprojectors/issues/13#issuecomment-662715598) to handle for bounding boxes as discussed below. After some experimenting, it looks like you don't really need the RFC 7946 version because it just causes bounding box issues, but I kept it anyway just in case.
 
-3. Then, as that blog post suggests, use [dirty reprojectors](https://github.com/developmentseed/dirty-reprojectors) for the reprojection to Albers USA trick. I downloaded the actual package but kept running into issues with the CLI output; it's likely I'm missing some argument in the formatting. For the sake of simplicity I opted for the [web app](https://www.developmentseed.org/dirty-reprojectors-app/) to modify both of the files in `mapshaper_CLI`. The 2 output files from the app are in the `dirty_reprojectors` folder. 
+3. Then, as that blog post suggests, use [dirty reprojectors](https://github.com/developmentseed/dirty-reprojectors) for the reprojection to Albers USA trick. I downloaded the actual package but kept running into issues with the CLI output; it's likely I'm missing some argument in the formatting. For the sake of simplicity I instead opted for the [web app](https://www.developmentseed.org/dirty-reprojectors-app/) to modify both of the files in `mapshaper_CLI`. The 2 output files from the app are in the `dirty_reprojectors` folder. 
   - `US_county_albersUSA_gj2008.geojson` plays well with the code in `R_mapping.R`. The RFC 7946 version shows annoying bounding boxes. Perhaps there's a workaround, but I found it simple enough to just use the 2008 file.
   - `US_county_albersUSA_gj2008.geojson` also works with `px.choropleth()` from Plotly, but for some reason the polygons are [badly wound](https://github.com/plotly/plotly.py/issues/3248). I ended up installing the `geojson_rewind` package [here](https://anaconda.org/conda-forge/geojson-rewind) or [here](https://github.com/chris48s/geojson-rewind). Then you can use `rewind()` with `rfc7946=False` to fix things. I saved the rewound version of the file as `dirty_reprojectors/US_county_albersUSA_gj2008_rewound.geojson` so you can just read that in and start plotting. See `python_mapping.ipynb` for the details. 
   - Oddly enough the badly wound version works fine with the Mapbox variant of Plotly's choropleths. Perhaps the two methods are internally different?

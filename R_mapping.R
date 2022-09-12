@@ -12,7 +12,8 @@ df <- vroom('county_popn_2021.csv') %>%
   filter(!(STATE %in% c('66','69','72','78','60'))) # drop territories
 
 # read in geojson file
-geo <- geojsonsf::geojson_sf('dirty_reprojectors/US_county_albersUSA_gj2008.geojson') # note specific use of gj2008 file
+geo <- geojsonsf::geojson_sf('dirty_reprojectors/US_county_albersUSA_gj2008.geojson') %>%
+  sf::st_as_sf() # note specific use of gj2008 file
 map_data <- left_join(geo, df, by=c('GEOID'='fips')) # join df with geo data
 
 plt <- ggplot() +

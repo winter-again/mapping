@@ -1,4 +1,5 @@
 # script for reading in and manipulating US 2020 census county shapefile 
+# borrow from here: https://github.com/hrbrmstr/rd3albers
 
 library(tidyverse)
 library(sp)
@@ -10,7 +11,7 @@ county_sp <- sf::st_read('cb_2020_us_county_5m/cb_2020_us_county_5m.shp', quiet=
   filter(!(STATEFP %in% c('66','69','72','78','60'))) %>% # ignore territories
   select(STUSPS, GEOID, geometry) %>%
   rename(FIPS=GEOID,
-         state=STUSPS) # %>%
+         state=STUSPS) %>%
   sf::st_transform(crs=2163) %>%
   # sf::st_transform(crs=5070) %>%
   as('Spatial') # convert to Spatial obj

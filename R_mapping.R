@@ -1,34 +1,31 @@
-# example of plotting in R
 library(tidyverse)
+library(vroom)
 library(ggthemes) # for clean map themes
+library(scales)
 
-# read in shapefile
-county_sf <- sf::st_read('US_2020_county_sf.shp', quiet=T)
+# example data -- 2021 population estimates for 3,143 counties
+df <- vroom('county_popn_2021.csv') %>%
+  select(STATE, STNAME, COUNTY, CTYNAME, POPESTIMATE2021) %>%
+  mutate(fips=paste0(STATE, COUNTY)) %>% # create FIPS code col; note that it has to be named 'fips' to work with plot_usmap() below
+  relocate(fips, .before=CTYNAME) %>%
+  filter(COUNTY!='000') %>% # drop state rows
+  filter(!(STATE %in% c('66','69','72','78','60'))) # drop territories
 
-# generate some dummy data
-# random value mapped to each county FIPS code
-# "z" is the value we'll plot
-dummy_data <- tibble(FIPS=county_sf$FIPS,
-                     z=rnorm(length(county_sf$FIPS)))
+# read in geojson file
+geo <- geojsonsf::geojson_sf('dirty_reprojectors/US_county_albersUSA_gj2008.geojson') # note specific use of gj2008 file
+map_data <- left_join(geo, df, by=c('GEOID'='fips')) # join df with geo data
 
-# connect shapefile to data being mapped; join on the 'FIPS' column
-map_data <- left_join(county_sf, dummy_data, by='FIPS')
-
-# plot
-# data is the map_data object we created above
-# fill is the "z" column of values to plot in choropleth
-# can change palette as you like (https://ggplot2.tidyverse.org/reference/scale_brewer.html#palettes)
 plt <- ggplot() +
-  geom_sf(data=map_data, mapping=aes(fill=z), color='black', size=0.01) +
+  geom_sf(data=map_data, mapping=aes(fill=POPESTIMATE2021), color='black', size=0.01) +
   coord_sf() +
-  scale_fill_distiller(palette='Blues', direction=1, name='Legend title') + # can put legend title here
-  theme_map() + # from ggthemes
+  theme_map() +
+  scale_fill_distiller(limits=c(10000, 200000), direction=1, name='2021 popn', oob=squish) + # can put legend title here; oob=squish makes it so that out of bound (oob) values get colored same as limit
+  # modify legend location
   theme(legend.position=c(0.95, 0.4),
         legend.background=element_blank(),
         plot.margin=margin(1,1.5,1,1, 'cm'))
 plt
 
 # save
-# note that the relative size of the 
-# legend depends on size of saved image below
-ggsave('R_mapping_plt.png', width=7, height=5, units='in')
+ggsave('R_mapping_plt.png', width=7, height=5, units='in', dpi=600) # png
+ggsave('R_mapping_plt.pdf', width=7, height=5, units='in')

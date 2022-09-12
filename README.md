@@ -8,6 +8,7 @@
 - `R_mapping.R`: example of US county choropleth using the shapefiles/GeoJSON I worked on
   - exmaple plots are `R_mapping_plt.pdf` and `R_mapping_plt.png`
 - `python_mapping.ipynb`: example of US county choropleth using `Plotly` and the updated GeoJSON I worked on 
+- `troubleshooting_Plotly.ipynb`: walkthrough of why Plotly's suggested GeoJSON file isn't up-to-date
 
 ## Motivation
 
@@ -33,3 +34,4 @@ Steps I took:
 3. Then, as that blog post suggests, use [dirty reprojectors](https://github.com/developmentseed/dirty-reprojectors) for the reprojection to Albers USA trick. I downloaded the actual package but kept running into issues with the CLI output; it's likely I'm missing some argument in the formatting. For the sake of simplicity I opted for the [web app](https://www.developmentseed.org/dirty-reprojectors-app/) to modify both of the files in `mapshaper_CLI`. The 2 output files from the app are in the `dirty_reprojectors` folder. 
   - `US_county_albersUSA_gj2008.geojson` plays well with the code in `R_mapping.R`. The RFC 7946 version shows annoying bounding boxes. Perhaps there's a workaround, but I found it simple enough to just use the 2008 file.
   - `US_county_albersUSA_gj2008.geojson` also works with `px.choropleth()` from Plotly, but for some reason the polygons are [badly wound](https://github.com/plotly/plotly.py/issues/3248). I ended up installing the `geojson_rewind` package [here](https://anaconda.org/conda-forge/geojson-rewind) or [here](https://github.com/chris48s/geojson-rewind). Then you can use `rewind()` with `rfc7946=False` to fix things. I saved the rewound version of the file as `dirty_reprojectors/US_county_albersUSA_gj2008_rewound.geojson` so you can just read that in and start plotting. See `python_mapping.ipynb` for the details. 
+  - Oddly enough the badly wound version works fine with the Mapbox variant of Plotly's choropleths. Perhaps the two methods are internally different?

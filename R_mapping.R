@@ -6,7 +6,7 @@ library(scales)
 # example data -- 2021 population estimates for 3,143 counties
 df <- vroom('county_popn_2021.csv') %>%
   select(STATE, STNAME, COUNTY, CTYNAME, POPESTIMATE2021) %>%
-  mutate(fips=paste0(STATE, COUNTY)) %>% # create FIPS code col; note that it has to be named 'fips' to work with plot_usmap() below
+  mutate(fips=paste0(STATE, COUNTY)) %>%
   relocate(fips, .before=CTYNAME) %>%
   filter(COUNTY!='000') %>% # drop state rows
   filter(!(STATE %in% c('66','69','72','78','60'))) # drop territories
